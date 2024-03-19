@@ -1,6 +1,6 @@
 [![DOI](https://zenodo.org/badge/265119113.svg)](https://zenodo.org/badge/latestdoi/265119113)
 
-# metarepo
+# Yarlagadda et al. "Emissions leakage and economic losses could limit the effectiveness of deforestation-linked oil crop import restrictions"
 Template repository for a single point of access meta-repository to reproduce an experiment
 
 ## Purpose
