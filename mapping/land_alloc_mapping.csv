@@ -1,0 +1,47 @@
+﻿landleaf,agg_land
+CornC4,Other crops
+FiberCrop,Other oil crops
+FodderGrass,Other crops
+FodderHerb,Other crops
+FodderHerbC4,Other crops
+Forest,Forest
+Hardwood_Forest,Forest
+Softwood_Forest,Forest
+Fruits,Other crops
+FruitsTree,Other crops
+Grassland,Grass and Shrub
+Legumes,Other crops
+MiscCrop,Other crops
+MiscCropTree,Other crops
+NutsSeeds,Other crops
+NutsSeedsTree,Other crops
+OilCrop,Other oil crops
+OilCropTree,Other oil crops
+OilPalmTree,Oil palm
+OtherArableLand,Other crops
+OtherGrain,Other crops
+OtherGrainC4,Other crops
+Pasture,Pasture
+ProtectedGrassland,Grass and Shrub
+ProtectedShrubland,Grass and Shrub
+ProtectedUnmanagedForest,Forest
+ProtectedUnmanagedHardwood_Forest,Forest
+ProtectedUnmanagedSoftwood_Forest,Forest
+ProtectedUnmanagedPasture,Pasture
+Rice,Other crops
+RockIceDesert,RockIceDesert
+RootTuber,Other crops
+Shrubland,Grass and Shrub
+Soybean,Soybean
+SugarCrop,Other crops
+SugarCropC4,Other crops
+UnmanagedForest,Forest
+UnmanagedHardwood_Forest,Forest
+UnmanagedSoftwood_Forest,Forest
+UnmanagedPasture,Pasture
+UrbanLand,UrbanLand
+Vegetables,Other crops
+Wheat,Other crops
+biomassGrass,Purpose-grown energy crops
+biomassTree,Purpose-grown energy crops
+Tundra,Tundra

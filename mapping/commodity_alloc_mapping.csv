@@ -1,0 +1,28 @@
+﻿input,agg_input
+Forest,Forest
+Beef,Livestock
+Corn,Other Crops
+Dairy,Livestock
+FiberCrop,FiberCrop
+Fruits,Other Crops
+Legumes,Other Crops
+MiscCrop,Other Crops
+NutsSeeds,Other Crops
+Nuts_Seeds,Other Crops
+OilCrop,OilCrop
+OilPalm,OilPalm
+OtherGrain,Other Crops
+OtherMeat_Fish,Livestock
+Pork,Livestock
+Poultry,Livestock
+Rice,Other Crops
+RootTuber,Other Crops
+Root_Tuber,Other Crops
+SheepGoat,Livestock
+Soybean,Soybean
+SugarCrop,Other Crops
+Vegetables,Other Crops
+Wheat,Other Crops
+FodderHerb,Fodder
+FodderGrass,Fodder
+Pasture,Pasture
