@@ -1045,12 +1045,12 @@ ggplot(data = filter(cum_diff_total_ag_revenue,
 
   # 4C ----------------------------------------------------------------------
 
-ggplot(data = filter(cum_diff_total_ag_revenue,
+ggplot(data = filter(cum_diff_total_grouped_ag_expend,
                      year == 2050, scenario.diff %in% c(paper_scenarios, forest_scenarios)),
        aes(x = grouped_region, y = value/(10^9), color = scenario.diff,group = scenario.diff))+
   geom_point(size = 2, alpha = 0.65)+
   stat_identity(yintercept=0, geom='hline', inherit.aes=TRUE, size = 1, color = "black")+
-  labs(title = "Change in cum. total production revenue in 2050", x = "", y = "$ (billions)") +
+  labs(title = "Change in cum. total ag. expenditures in 2050", x = "", y = "$ (billions)") +
   theme_bw()+
   theme(text = element_text(size = 12))+
   theme(legend.position = "right", text = element_text(size = 12)) +
@@ -1058,6 +1058,8 @@ ggplot(data = filter(cum_diff_total_ag_revenue,
                      values = scenario_colors)+
   coord_flip()+
   ggsave(paste0(PLOT_FOLDER,"Fig_4C.pdf", sep = ""),width=5, height=3, units="in")
+
+
 
 
 
