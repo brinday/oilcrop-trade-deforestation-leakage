@@ -16,3 +16,18 @@ Yarlagadda, B. (2024). Input data and model version for "Emissions leakage and e
 ### Output data
 Yarlagadda, B. (2024). Output data from "Emissions leakage and economic losses could limit the effectiveness of deforestation-linked oil crop import restrictions". Zenodo.
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10849930.svg)](https://doi.org/10.5281/zenodo.10849930)
+
+### System requirements:
+Software dependencies (and versions) for running GCAM, an open source model, are documented at: 
+https://jgcri.github.io/gcam-doc/gcam-build.html
+
+### Installation guide:
+Installation requirements for running GCAM are documented at:
+https://jgcri.github.io/gcam-doc/user-guide.html
+To install and compile GCAM, it typically takes 2-3 hours.
+
+### Demo:
+To run the scenarios in this paper, use the exe/configuration.xml included in the input files.
+A subset of the expected output has been provided in the output dataset.
+
+To reproduce the figures shown in the paper, use the script generate_paper_figures.R
