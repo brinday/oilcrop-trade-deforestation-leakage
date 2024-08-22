@@ -28,6 +28,34 @@ dir.create(PLOT_FOLDER)
 #Function "is not an element of" (opposite of %in%)
 '%!in%' <- function( x, y ) !( '%in%'( x, y ) )
 
+#Fill annual (fill to all GCAM years). If CUMULATIVE = T, get cumulative
+Fill_annual <- function(.df, CUMULATIVE = FALSE,
+                        CUM_YEAR_START = 2020,
+                        CUM_OUT_STEP = 5){
+  YEAR_START <- min(unique(.df$year))
+  YEAR_END <- max(unique(.df$year))
+  .df %>% mutate(year = as.integer(year)) -> .df
+  
+  
+  .df %>% filter(year >= YEAR_START) %>%
+    bind_rows(
+      .df %>%
+        #assuming YEAR_END has values for all
+        filter(year == YEAR_END) %>% select(-year) %>%
+        mutate(value = NA) %>%
+        gcamdata::repeat_add_columns(tibble(year = setdiff(seq(YEAR_START,YEAR_END), unique(.df$year))))
+    ) %>% arrange(year) %>%
+    mutate(value = gcamdata::approx_fun(year, value, rule = 2)) -> .df1
+  
+  if (CUMULATIVE == TRUE ) {
+    assertthat::assert_that(CUM_YEAR_START >= YEAR_START)
+    .df1 %>% filter(year >= CUM_YEAR_START) %>%
+      mutate(value = cumsum(value)) %>% filter(year >= CUM_YEAR_START) %>%
+      filter(year %in% seq(YEAR_START,YEAR_END, CUM_OUT_STEP))-> .df1
+  }
+  return(.df1)
+}
+
 aggregate_rows <- function(df, filter_var, var_name, filter_group, ...) {
   group_var <- quos(...)
   filter_var <- enquo(filter_var)
@@ -604,42 +632,31 @@ total_ag_revenue <- grouped_ag_production_revenue %>%
   group_by(scenario, grouped_region, year, Units) %>%
   dplyr::summarise(value = sum(value))
 
-  # DIFF AG PRODUCTION REVENUE [$] ------------------------------------------
+  # CUM AG PRODUCTION REVENUE [$] ------------------------------------------
 
-diff_grouped_ag_production_revenue <- diff_from_scen(grouped_ag_production_revenue,
-                                                     ref_scenario = REF_scenario,
-                                                     diff_scenarios = c(diff_scenarios, forest_scenarios),
-                                                     join_var = c("grouped_region","subsector", "year", "Units"))
+cum_grouped_oil_crop_revenue <- grouped_total_oil_crop_ag_revenue_w_global %>%
+  group_by(scenario, grouped_region, Units) %>%
+  Fill_annual(CUMULATIVE = T, CUM_YEAR_START = 2015) %>%
+  arrange(scenario, grouped_region, Units)
 
-diff_total_oil_crop_ag_revenue <- diff_from_scen(total_oil_crop_ag_revenue,
-                                                 ref_scenario = REF_scenario,
-                                                 diff_scenarios = c(diff_scenarios, forest_scenarios),
-                                                 join_var = c("grouped_region", "year", "Units")) %>%
-  mutate(grouped_region = factor(grouped_region, levels = agg_region_levels))
+cum_grouped_total_ag_revenue <- grouped_total_ag_revenue_w_global %>%
+  group_by(scenario, grouped_region, Units) %>%
+  Fill_annual(CUMULATIVE = T, CUM_YEAR_START = 2015) %>%
+  arrange(scenario, grouped_region, Units)
 
-diff_total_ag_revenue <- diff_from_scen(total_ag_revenue,
-                                        ref_scenario = REF_scenario,
-                                        diff_scenarios = c(diff_scenarios, forest_scenarios),
-                                        join_var = c("grouped_region", "year", "Units")) %>%
-  mutate(grouped_region = factor(grouped_region, levels = agg_region_levels))
+# DIFF CUM AG PRODUCTION REVENUE [$] ------------------------------------------
 
-  # CUMULATIVE DIFF AG PRODUCTION REVENUE [$] --------------------------------------
+cum_diff_total_oil_crop_revenue <- diff_from_scen(cum_grouped_oil_crop_revenue,
+                                                  ref_scenario = REF_scenario,
+                                                  diff_scenarios = c(diff_scenarios, forest_scenarios),
+                                                  join_var = c("grouped_region", "year", "Units")) %>%
+  mutate(grouped_region = factor(grouped_region, levels = agg_region_levels_w_global))
 
-cum_diff_ag_revenue <- diff_grouped_ag_production_revenue %>%
-  group_by(scenario.diff, grouped_region, subsector, Units) %>%
-  dplyr::mutate(value = cumsum(value)) %>%
-  mutate(grouped_region = factor(grouped_region, levels = agg_region_levels))
-
-cum_diff_total_oil_crop_revenue <- diff_total_oil_crop_ag_revenue %>%
-  group_by(scenario.diff, grouped_region, Units) %>%
-  dplyr::mutate(value = cumsum(value)) %>%
-  mutate(grouped_region = factor(grouped_region, levels = agg_region_levels))
-
-cum_diff_total_ag_revenue <- diff_total_ag_revenue %>%
-  group_by(scenario.diff, grouped_region, Units) %>%
-  dplyr::mutate(value = cumsum(value) )%>%
-  mutate(grouped_region = factor(grouped_region, levels = agg_region_levels))
-
+cum_diff_total_ag_revenue <- diff_from_scen(cum_grouped_total_ag_revenue,
+                                            ref_scenario = REF_scenario,
+                                            diff_scenarios = c(diff_scenarios, forest_scenarios),
+                                            join_var = c("grouped_region", "year", "Units")) %>%
+  mutate(grouped_region = factor(grouped_region, levels = agg_region_levels_w_global))
   # AG CONSUMER EXPENDITURE [$] ---------------------------------------------------
 
 grouped_ag_expend <- ag_consumption %>%
@@ -652,29 +669,24 @@ total_grouped_ag_expend <- grouped_ag_expend %>%
   group_by(scenario, grouped_region, year, Units) %>%
   dplyr::summarise(value = sum(value))
 
-  # DIFF AG CONSUMER EXPENDITURE [$]--------------------------------------------
+  # CUM AG CONSUMER EXPENDITURE [$]--------------------------------------------
+
+cum_grouped_ag_expend <- grouped_ag_expend_w_global %>%
+  ungroup() %>%
+  arrange(scenario, grouped_region, year, Units) %>%
+  group_by(Units, scenario, grouped_region) %>%
+  Fill_annual(CUMULATIVE = T, CUM_YEAR_START = 2015)
+
+  # DIFF CUM CONSUMER AG EXPENDITURE [$]----------------------------------------
 
 
-diff_total_grouped_ag_expend <- diff_from_scen(total_grouped_ag_expend,
-                                               ref_scenario = REF_scenario,
-                                               diff_scenarios = c(diff_scenarios, forest_scenarios),
-                                               join_var = c("grouped_region", "year", "Units")) %>%
-  mutate(grouped_region = factor(grouped_region,levels = agg_region_levels))
-
-  # CUM DIFF CONSUMER AG EXPENDITURE [$]----------------------------------------
+diff_cum_grouped_ag_expend <- diff_from_scen(cum_grouped_ag_expend,
+                                             ref_scenario = REF_scenario,
+                                             diff_scenarios = c(diff_scenarios, forest_scenarios),
+                                             join_var = c("grouped_region", "year", "Units")) %>%
+  mutate(grouped_region = factor(grouped_region,levels = agg_region_levels_w_global))
 
 
-cum_diff_total_grouped_ag_expend <- diff_total_grouped_ag_expend %>%
-  group_by(scenario.diff, grouped_region, Units) %>%
-  mutate(value = cumsum(value)) %>%
-  mutate(grouped_region = factor(grouped_region, levels = agg_region_levels))
-
-cum_diff_total_grouped_ag_expend_w_global <- cum_diff_total_grouped_ag_expend  %>%
-  group_by(scenario.diff, year, Units, scenario.ref) %>%
-  dplyr::summarise(value = sum(value)) %>%
-  mutate(region = "Global") %>%
-  bind_rows(cum_diff_total_grouped_ag_expend ) %>%
-  mutate(grouped_region = factor(grouped_region, levels = agg_region_levels_w_global))
 
   # LAND ALLOCATION [Ha] ---------------------------------------------------------
 
@@ -727,26 +739,40 @@ global_LUC_emissions <- reg_LUC_emissions %>%
 grouped_reg_LUC_emissions_w_global <- bind_rows(grouped_reg_LUC_emissions,
                                                 global_LUC_emissions)
 
-  # CUMULATIVE LUC EMISSIONS [MtCO2] ----------------------------------------
+  # CUM LUC EMISSIONS [MtCO2] -------------------------------------------------------
 
 cum_global_LUC_emissions <- global_LUC_emissions %>%
   filter(year >= 2015) %>%
-  group_by(Units, scenario) %>%
-  arrange(Units, scenario) %>%
-  dplyr::mutate(cum_value = cumsum(value))
+  group_by(Units, scenario, grouped_region) %>%
+  Fill_annual(CUMULATIVE = T, CUM_YEAR_START = 2015)
 
 cum_reg_LUC_emissions <- reg_LUC_emissions %>%
   filter(year >= 2015) %>%
   group_by(Units, scenario, region) %>%
-  arrange(Units, scenario, region) %>%
-  dplyr::mutate(cum_value = cumsum(value))
+  Fill_annual(CUMULATIVE = T, CUM_YEAR_START = 2015) 
 
 grouped_cum_reg_LUC_emissions <- cum_reg_LUC_emissions %>%
   left_join(grouped_region_mapping, by = c("region")) %>%
   group_by(Units, scenario, grouped_region, year) %>%
-  dplyr::summarise(cum_value = sum(cum_value)) %>%
-  dplyr::mutate(value = cum_value)
+  dplyr::summarise(value = sum(value))
 
+global_cum_reg_LUC_emissions <- 
+  bind_rows(cum_global_LUC_emissions, grouped_cum_reg_LUC_emissions) %>%
+  mutate(grouped_region = factor(grouped_region, levels = agg_region_levels_w_global_flip)) 
+
+  # DIFF CUM LUC EMISSIONS [MtCO2] ------------------------------------------------------
+
+diff_cum_reg_LUC_emissions <- diff_from_scen(cum_reg_LUC_emissions,
+                                             diff_scenarios = c(diff_scenarios, forest_scenarios),
+                                             ref_scenario = REF_scenario,
+                                             join_var = c("Units", "region", "year"),
+                                             Units, region, year)
+
+diff_grouped_cum_reg_LUC_em <- diff_from_scen(global_cum_reg_LUC_emissions,
+                                              diff_scenarios = c(diff_scenarios, forest_scenarios),
+                                              ref_scenario = REF_scenario,
+                                              join_var = c("Units", "grouped_region", "year"),
+                                              Units, grouped_region, year)
 
 # PAPER FIGURES -----------------------------------------------------------
 
