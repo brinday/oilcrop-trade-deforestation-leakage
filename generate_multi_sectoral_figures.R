@@ -34,8 +34,8 @@ Fill_annual <- function(.df, CUMULATIVE = FALSE,
   YEAR_START <- min(unique(.df$year))
   YEAR_END <- max(unique(.df$year))
   .df %>% mutate(year = as.integer(year)) -> .df
-  
-  
+
+
   .df %>% filter(year >= YEAR_START) %>%
     bind_rows(
       .df %>%
@@ -45,7 +45,7 @@ Fill_annual <- function(.df, CUMULATIVE = FALSE,
         gcamdata::repeat_add_columns(tibble(year = setdiff(seq(YEAR_START,YEAR_END), unique(.df$year))))
     ) %>% arrange(year) %>%
     mutate(value = gcamdata::approx_fun(year, value, rule = 2)) -> .df1
-  
+
   if (CUMULATIVE == TRUE ) {
     assertthat::assert_that(CUM_YEAR_START >= YEAR_START)
     .df1 %>% filter(year >= CUM_YEAR_START) %>%
@@ -71,24 +71,24 @@ aggregate_rows <- function(df, filter_var, var_name, filter_group, ...) {
 parse_output_scenario <- function (df) {
   #remove the duplicated headers and columnn names
   df <- df[!(duplicated(df) | duplicated(df, fromLast = TRUE)), ]
-  
+
   #remove 1990
   try(df <- select(df, -c("1990")))
   try(df <- select(df, -c("1980", "1985", "1995", "2000")))
-  
+
   #remove columns with NA
   df <- df[,!apply(is.na(df), 2, any)]
-  
-  
+
+
   #separate scenario name and date
   df <- separate(df, col = "scenario", into = c("scenario", "date"), sep = c(","))
-  
+
   #tidy data
   YEARS <- as.character(seq(2005,2100,by=5))
   df <- gather(df, YEARS, key = "year", value = "value") %>%
     dplyr::mutate(year = as.integer(year)) %>%
     select(-date)
-  
+
   return (df)
 }
 
@@ -96,30 +96,30 @@ parse_output_scenario <- function (df) {
 #returns difference from a scenario
 diff_from_scen <- function(df, diff_scenarios, ref_scenario, join_var, ...){
   net_join_var <- quos(...)
-  
+
   diff_df <- df %>%
     filter(scenario %in% diff_scenarios)
-  
+
   ref_df <- df %>%
     filter(scenario %in% ref_scenario)
-  
+
   output_df <- diff_df %>%
     full_join(ref_df, by = join_var,
               suffix = c(".diff", ".ref")) %>%
-    
+
     mutate(value.diff = if_else(is.na(value.diff),0,value.diff),
            value.ref = if_else(is.na(value.ref),0,value.ref),
            value = value.diff - value.ref)
-  
+
   net_df <- output_df %>%
     group_by(scenario.diff, !!!net_join_var) %>%
     dplyr::summarise(value.net = sum(value)) %>%
     ungroup()
-  
+
   output_df_new <- output_df %>%
     left_join(net_df,
               suffix = c("", ".net"))
-  
+
   return(output_df_new)
 }
 
@@ -127,18 +127,18 @@ diff_from_scen <- function(df, diff_scenarios, ref_scenario, join_var, ...){
 
 #returns % difference from a scenario
 pct_diff_from_scen <- function(df, diff_scenarios, ref_scenario, join_var){
-  
+
   diff_df <- df %>%
     filter(scenario %in% diff_scenarios)
-  
+
   ref_df <- df %>%
     filter(scenario %in% ref_scenario)
-  
+
   output_df <- diff_df %>%
     full_join(ref_df, by = join_var,
               suffix = c(".diff", ".ref")) %>%
     mutate(value = ((value.diff - value.ref)/value.ref) * 100)
-  
+
   return(output_df)
 }
 
@@ -146,54 +146,54 @@ pct_diff_from_scen <- function(df, diff_scenarios, ref_scenario, join_var){
 #returns difference from 2015
 diff_from_2015 <- function(df, diff_scenarios, ref_scenario, join_var, ...){
   net_join_var <- quos(...)
-  
+
   diff_2015 <- df %>%
     filter(scenario == ref_scenario,year == 2015)
-  
+
   output_df <- df %>%
     full_join(diff_2015, by = join_var,
               suffix = c(".diff", ".2015")) %>%
-    
+
     mutate(value.diff = if_else(is.na(value.diff),0,value.diff),
            value.2015 = if_else(is.na(value.2015),0,value.2015),
            value = value.diff - value.2015)
-  
+
   net_df <- output_df %>%
     group_by(scenario.diff, !!!net_join_var) %>%
     dplyr::summarise(value.net = sum(value)) %>%
     ungroup()
-  
+
   output_df_new <- output_df %>%
     left_join(net_df,
               suffix = c("", ".net"))
-  
+
   return(output_df_new)
 }
 
 #returns pct difference from 2015
 pct_diff_from_2015 <- function(df, diff_scenarios, ref_scenario, join_var, ...){
   net_join_var <- quos(...)
-  
+
   diff_2015 <- df %>%
     filter(scenario == ref_scenario,year == 2015)
-  
+
   output_df <- df %>%
     full_join(diff_2015, by = join_var,
               suffix = c(".diff", ".2015")) %>%
-    
+
     mutate(value.diff = if_else(is.na(value.diff),0,value.diff),
            value.2015 = if_else(is.na(value.2015),0,value.2015),
            value = ((value.diff - value.2015)/value.2015)*100)
-  
+
   net_df <- output_df %>%
     group_by(scenario.diff, !!!net_join_var) %>%
     dplyr::summarise(value.net = sum(value)) %>%
     ungroup()
-  
+
   output_df_new <- output_df %>%
     left_join(net_df,
               suffix = c("", ".net"))
-  
+
   return(output_df_new)
 }
 
@@ -213,7 +213,8 @@ scenario_bar_labels_2030 <- c("A_REF.2015" = "2015",
                               "B_EU_freeze.2030" = "EU freeze",
                               "D_HighInc_freeze.2030" = "HighInc freeze",
                               "E_EUTop5_freeze.2030" = "EU/Top 5 freeze",
-                              "F_EU_ban.2030" = "EU ban")
+                              "F_EU_ban.2030" = "EU ban",
+                              "G_LUCpa.2030" = "Land protect")
 
 scenario_bar_labels_2050 <- c("A_REF.2015" = "2015",
                               "blank1" = "",
@@ -221,7 +222,8 @@ scenario_bar_labels_2050 <- c("A_REF.2015" = "2015",
                               "B_EU_freeze.2050" = "EU freeze",
                               "D_HighInc_freeze.2050" = "HighInc freeze",
                               "E_EUTop5_freeze.2050" = "EU/Top 5 freeze",
-                              "F_EU_ban.2050" = "EU ban")
+                              "F_EU_ban.2050" = "EU ban",
+                              "G_LUCpa.2050" = "Land protect")
 
 #REGIONS
 agg_region_levels <- c("ROW",
@@ -421,13 +423,45 @@ water_scarcity <- water_wd_basin %>%
   mutate(value = value.demand/value.supply)
 
 
-# DIFF WATER WITHDRAWALS --------------------------------------------------
+# CUMULATIVE WATER WITHDRAWALS --------------------------------------------
 
-diff_grouped_agg_water_wd <- diff_from_scen(global_agg_water_wd,
-                                            diff_scenarios = c(diff_scenarios, forest_scenarios),
-                                            ref_scenario = REF_scenario,
-                                            join_var = c("Units", "grouped_region", "sector", "year"),
-                                            Units, grouped_region, year)
+cum_water_wd_reg_basin <- water_wd_reg_basin %>%
+  filter(year >= 2015) %>%
+  group_by(Units, scenario, region, basin) %>%
+  Fill_annual(CUMULATIVE = T, CUM_YEAR_START = 2015)
+
+cum_water_wd_basin <- water_wd_basin %>%
+  filter(year >= 2015) %>%
+  group_by(Units, scenario, basin) %>%
+  Fill_annual(CUMULATIVE = T, CUM_YEAR_START = 2015)
+
+cum_agg_water_wd <- global_agg_water_wd %>%
+  filter(year >= 2015) %>%
+  group_by(Units, scenario, grouped_region, sector) %>%
+  Fill_annual(CUMULATIVE = T, CUM_YEAR_START = 2015)
+
+
+# DIFF CUMULATIVE WATER WITHDRAWALS ---------------------------------------
+
+diff_cum_water_wd_reg_basin <- diff_from_scen(cum_water_wd_reg_basin,
+                                              diff_scenarios = c(diff_scenarios, forest_scenarios),
+                                              ref_scenario = REF_scenario,
+                                              join_var = c("Units", "region", "basin", "year"),
+                                              Units, region, basin, year)
+
+diff_cum_water_wd_basin <- diff_from_scen(cum_water_wd_basin,
+                                          diff_scenarios = c(diff_scenarios, forest_scenarios),
+                                          ref_scenario = REF_scenario,
+                                          join_var = c("Units", "basin", "year"),
+                                          Units, basin, year)
+
+diff_cum_agg_water_wd <- diff_from_scen(cum_agg_water_wd,
+                                        diff_scenarios = c(diff_scenarios, forest_scenarios),
+                                        ref_scenario = REF_scenario,
+                                        join_var = c("Units", "sector", "year", "grouped_region"))
+
+# PLOT DIFF WATER WITHDRAWALS (LINE PLOT) --------------------------------------------------
+
 
 diff_grouped_agg_water_wd$grouped_region <- factor(diff_grouped_agg_water_wd$grouped_region,
                                                    levels = agg_region_levels_w_global)
@@ -463,32 +497,30 @@ ggplot(data = filter(diff_grouped_agg_water_wd,
   ggsave(paste0(PLOT_FOLDER,"diff_water_wd_2050.png", sep = ""),width=20, height=5, units="in")
 
 
-# CUMULATIVE WATER WITHDRAWALS --------------------------------------------
 
-cum_water_wd_reg_basin <- water_wd_reg_basin %>%
-  filter(year >= 2015) %>%
-  group_by(Units, scenario, region, basin) %>%
-  Fill_annual(CUMULATIVE = T, CUM_YEAR_START = 2015)
-
-cum_water_wd_basin <- water_wd_basin %>%
-  filter(year >= 2015) %>%
-  group_by(Units, scenario, basin) %>%
-  Fill_annual(CUMULATIVE = T, CUM_YEAR_START = 2015)
+# PLOT CUM DIFF WATER WITHDRAWALS (LINE PLOT) --------------------------------------------------
 
 
-# DIFF CUMULATIVE WATER WITHDRAWALS ---------------------------------------
+diff_cum_agg_water_wd$grouped_region <- factor(diff_cum_agg_water_wd$grouped_region,
+                                                   levels = agg_region_levels_w_global)
+diff_cum_agg_water_wd$sector <- factor(diff_cum_agg_water_wd$sector,
+                                           levels = water_levels)
 
-diff_cum_water_wd_reg_basin <- diff_from_scen(cum_water_wd_reg_basin,
-               diff_scenarios = c(diff_scenarios, forest_scenarios),
-               ref_scenario = REF_scenario,
-               join_var = c("Units", "region", "basin", "year"),
-               Units, region, basin, year)
+ggplot(data = filter(diff_cum_agg_water_wd,
+                     year == 2050),
+       aes(x = grouped_region, y = value, fill = sector, group = sector))+
+  geom_bar(position = position_stack(reverse = FALSE), stat = "identity")+
+  stat_identity(yintercept=0, geom='hline', inherit.aes=TRUE, linewidth = 1)+
+  labs(title = "Cumulative water withdrawals", x = "", y = "diff. km^3") +
+  facet_wrap(~interaction(scenario.diff, year), nrow = 1, scales = "fixed", labeller = as_labeller(scenario_bar_labels_2050)) +
+  theme_bw()+
+  theme(text = element_text(size = 12))+
+  theme(legend.position = "right", text = element_text(size = 12)) +
+  scale_fill_manual(values = water_colors)+
+  coord_flip()+
+  ggsave(paste0(PLOT_FOLDER,"cum_diff_water_wd_2050.png", sep = ""),width=20, height=5, units="in")
 
-diff_cum_water_wd_basin <- diff_from_scen(cum_water_wd_basin,
-                                              diff_scenarios = c(diff_scenarios, forest_scenarios),
-                                              ref_scenario = REF_scenario,
-                                              join_var = c("Units", "basin", "year"),
-                                              Units, basin, year)
+
 
 # FERT CONS --------------------------------------------------
 
@@ -553,6 +585,9 @@ diff_grouped_agg_fert_cons$grouped_region <- factor(diff_grouped_agg_fert_cons$g
                                                     levels = agg_region_levels_w_global)
 diff_grouped_agg_fert_cons$sector <- factor(diff_grouped_agg_fert_cons$sector,
                                             levels = fert_levels)
+
+# PLOT DIFF FERT CONS -----------------------------------------------------
+
 ggplot(data = filter(diff_grouped_agg_fert_cons,
                      year == 2030),
        aes(x = grouped_region, y = value*100, fill = sector, group = sector))+
@@ -595,19 +630,53 @@ cum_fert_cons_basin <- fert_cons_basin %>%
   group_by(Units, scenario, basin) %>%
   Fill_annual(CUMULATIVE = T, CUM_YEAR_START = 2015)
 
+cum_agg_fert_cons <- global_agg_fert_cons %>%
+  filter(year >= 2015) %>%
+  group_by(Units, scenario, sector, grouped_region) %>%
+  Fill_annual(CUMULATIVE = T, CUM_YEAR_START = 2015)
 
-# DIFF CUMULATIVE FERT CONS ---------------------------------------
+# DIFF CUMULATIVE FERT CONS  ---------------------------------------
 
 diff_cum_fert_cons_reg_basin <- diff_from_scen(cum_fert_cons_reg_basin,
-                                              diff_scenarios = c(diff_scenarios, forest_scenarios),
-                                              ref_scenario = REF_scenario,
-                                              join_var = c("Units", "region", "basin", "year"),
-                                              Units, region, basin, year)
+                                               diff_scenarios = c(diff_scenarios, forest_scenarios),
+                                               ref_scenario = REF_scenario,
+                                               join_var = c("Units", "region", "basin", "year"),
+                                               Units, region, basin, year)
 
 diff_cum_fert_cons_basin <- diff_from_scen(cum_fert_cons_basin,
-                                          diff_scenarios = c(diff_scenarios, forest_scenarios),
-                                          ref_scenario = REF_scenario,
-                                          join_var = c("Units", "basin", "year"),
-                                          Units, basin, year)
+                                           diff_scenarios = c(diff_scenarios, forest_scenarios),
+                                           ref_scenario = REF_scenario,
+                                           join_var = c("Units", "basin", "year"),
+                                           Units, basin, year)
 
+
+
+
+diff_cum_agg_fert_cons <- diff_from_scen(cum_agg_fert_cons,
+                                        diff_scenarios = c(diff_scenarios, forest_scenarios),
+                                        ref_scenario = REF_scenario,
+                                        join_var = c("Units", "sector", "year", "grouped_region"))
+
+# PLOT CUM FERT CONS (LINE PLOT) ------------------------------------------------------
+
+
+diff_cum_agg_fert_cons$grouped_region <- factor(diff_cum_agg_fert_cons$grouped_region,
+                                               levels = agg_region_levels_w_global)
+diff_cum_agg_fert_cons$sector <- factor(diff_cum_agg_fert_cons$sector,
+                                       levels = water_levels)
+
+
+ggplot(data = filter(diff_cum_agg_fert_cons,
+                     year == 2050),
+       aes(x = grouped_region, y = value*100, fill = sector, group = sector))+
+  geom_bar(position = position_stack(reverse = FALSE), stat = "identity")+
+  stat_identity(yintercept=0, geom='hline', inherit.aes=TRUE, linewidth = 1)+
+  labs(title = "Cumulative fertilizer consumption", x = "", y = "diff. Mt N") +
+  facet_wrap(~interaction(scenario.diff, year), nrow = 1, scales = "fixed", labeller = as_labeller(scenario_bar_labels_2050)) +
+  theme_bw()+
+  theme(text = element_text(size = 12))+
+  theme(legend.position = "right", text = element_text(size = 12)) +
+  scale_fill_manual(values = fert_colors)+
+  coord_flip()+
+  ggsave(paste0(PLOT_FOLDER,"diff_cum_fert_cons_2050.png", sep = ""),width=20, height=5, units="in")
 
