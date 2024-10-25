@@ -460,7 +460,7 @@ diff_cum_agg_water_wd <- diff_from_scen(cum_agg_water_wd,
                                         ref_scenario = REF_scenario,
                                         join_var = c("Units", "sector", "year", "grouped_region"))
 
-# PLOT DIFF WATER WITHDRAWALS (LINE PLOT) --------------------------------------------------
+# PLOT ANNUAL DIFF WATER WITHDRAWALS (BAR PLOT) --------------------------------------------------
 
 
 diff_grouped_agg_water_wd$grouped_region <- factor(diff_grouped_agg_water_wd$grouped_region,
@@ -498,7 +498,7 @@ ggplot(data = filter(diff_grouped_agg_water_wd,
 
 
 
-# PLOT CUM DIFF WATER WITHDRAWALS (LINE PLOT) --------------------------------------------------
+# PLOT CUM DIFF WATER WITHDRAWALS (BAR PLOT) --------------------------------------------------
 
 
 diff_cum_agg_water_wd$grouped_region <- factor(diff_cum_agg_water_wd$grouped_region,
@@ -586,38 +586,6 @@ diff_grouped_agg_fert_cons$grouped_region <- factor(diff_grouped_agg_fert_cons$g
 diff_grouped_agg_fert_cons$sector <- factor(diff_grouped_agg_fert_cons$sector,
                                             levels = fert_levels)
 
-# PLOT DIFF FERT CONS -----------------------------------------------------
-
-ggplot(data = filter(diff_grouped_agg_fert_cons,
-                     year == 2030),
-       aes(x = grouped_region, y = value*100, fill = sector, group = sector))+
-  geom_bar(position = position_stack(reverse = FALSE), stat = "identity")+
-  stat_identity(yintercept=0, geom='hline', inherit.aes=TRUE, linewidth = 1)+
-  labs(title = "Fertilizer consumption", x = "", y = "diff. Mt N") +
-  facet_wrap(~interaction(scenario.diff, year), nrow = 1, scales = "fixed", labeller = as_labeller(scenario_bar_labels_2030)) +
-  theme_bw()+
-  theme(text = element_text(size = 12))+
-  theme(legend.position = "right", text = element_text(size = 12)) +
-  scale_fill_manual(values = fert_colors)+
-  coord_flip()+
-  ggsave(paste0(PLOT_FOLDER,"diff_fert_cons_2030.png", sep = ""),width=20, height=5, units="in")
-
-ggplot(data = filter(diff_grouped_agg_fert_cons,
-                     year == 2050),
-       aes(x = grouped_region, y = value*100, fill = sector, group = sector))+
-  geom_bar(position = position_stack(reverse = FALSE), stat = "identity")+
-  stat_identity(yintercept=0, geom='hline', inherit.aes=TRUE, linewidth = 1)+
-  labs(title = "Fertilizer consumption", x = "", y = "diff. Mt N") +
-  facet_wrap(~interaction(scenario.diff, year), nrow = 1, scales = "fixed", labeller = as_labeller(scenario_bar_labels_2050)) +
-  theme_bw()+
-  theme(text = element_text(size = 12))+
-  theme(legend.position = "right", text = element_text(size = 12)) +
-  scale_fill_manual(values = fert_colors)+
-  coord_flip()+
-  ggsave(paste0(PLOT_FOLDER,"diff_fert_cons_2050.png", sep = ""),width=20, height=5, units="in")
-
-
-
 # CUMULATIVE FERT CONS --------------------------------------------
 
 cum_fert_cons_reg_basin <- fert_cons_reg_basin %>%
@@ -657,7 +625,39 @@ diff_cum_agg_fert_cons <- diff_from_scen(cum_agg_fert_cons,
                                         ref_scenario = REF_scenario,
                                         join_var = c("Units", "sector", "year", "grouped_region"))
 
-# PLOT CUM FERT CONS (LINE PLOT) ------------------------------------------------------
+# PLOT ANNUAL DIFF FERT CONS (BAR PLOT) -----------------------------------------------------
+
+ggplot(data = filter(diff_grouped_agg_fert_cons,
+                     year == 2030),
+       aes(x = grouped_region, y = value*100, fill = sector, group = sector))+
+  geom_bar(position = position_stack(reverse = FALSE), stat = "identity")+
+  stat_identity(yintercept=0, geom='hline', inherit.aes=TRUE, linewidth = 1)+
+  labs(title = "Fertilizer consumption", x = "", y = "diff. Mt N") +
+  facet_wrap(~interaction(scenario.diff, year), nrow = 1, scales = "fixed", labeller = as_labeller(scenario_bar_labels_2030)) +
+  theme_bw()+
+  theme(text = element_text(size = 12))+
+  theme(legend.position = "right", text = element_text(size = 12)) +
+  scale_fill_manual(values = fert_colors)+
+  coord_flip()+
+  ggsave(paste0(PLOT_FOLDER,"diff_fert_cons_2030.png", sep = ""),width=20, height=5, units="in")
+
+ggplot(data = filter(diff_grouped_agg_fert_cons,
+                     year == 2050),
+       aes(x = grouped_region, y = value*100, fill = sector, group = sector))+
+  geom_bar(position = position_stack(reverse = FALSE), stat = "identity")+
+  stat_identity(yintercept=0, geom='hline', inherit.aes=TRUE, linewidth = 1)+
+  labs(title = "Fertilizer consumption", x = "", y = "diff. Mt N") +
+  facet_wrap(~interaction(scenario.diff, year), nrow = 1, scales = "fixed", labeller = as_labeller(scenario_bar_labels_2050)) +
+  theme_bw()+
+  theme(text = element_text(size = 12))+
+  theme(legend.position = "right", text = element_text(size = 12)) +
+  scale_fill_manual(values = fert_colors)+
+  coord_flip()+
+  ggsave(paste0(PLOT_FOLDER,"diff_fert_cons_2050.png", sep = ""),width=20, height=5, units="in")
+
+
+
+# PLOT CUM FERT CONS (BAR PLOT) ------------------------------------------------------
 
 
 diff_cum_agg_fert_cons$grouped_region <- factor(diff_cum_agg_fert_cons$grouped_region,
