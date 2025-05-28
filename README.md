@@ -1,5 +1,5 @@
 
-# Yarlagadda et al. "Emissions leakage and economic losses could undermine deforestation-linked oil crop import restrictions"
+# Yarlagadda et al. (2025) "Emissions leakage and economic losses could undermine deforestation-linked oil crop import restrictions"
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14679830.svg)](https://doi.org/10.5281/zenodo.14679830)
 
 
